@@ -1,28 +1,35 @@
-import { LayoutDashboard, Ticket, Users, CalendarDays } from "lucide-react";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Ticket,
+  Tags,
+  Users,
+} from "lucide-react";
 
 export const sidebarItems = [
   {
-    title: "Dashboard",
+    title: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
-    roles: ["organizer"],
-  },
-  {
-    title: "Transactions",
-    href: "/dashboard/transactions",
-    icon: Ticket,
-    roles: ["organizer"],
   },
   {
     title: "Events",
     href: "/dashboard/events",
     icon: CalendarDays,
-    roles: ["organizer"],
+  },
+  {
+    title: "Transactions",
+    href: "/dashboard/transactions",
+    icon: Ticket,
+  },
+  {
+    title: "Vouchers",
+    href: "/dashboard/vouchers",
+    icon: Tags,
   },
   {
     title: "Attendees",
     href: "/dashboard/attendees",
     icon: Users,
-    roles: ["organizer"],
   },
 ];

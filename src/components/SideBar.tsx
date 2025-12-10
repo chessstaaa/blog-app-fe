@@ -18,7 +18,7 @@ export const Sidebar = () => {
           href="/"
           className="flex items-center gap-2 text-xl font-bold tracking-tight"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white shadow-sm shadow-blue-900/50">
             EP
           </div>
           <span className="text-blue-50">EventPro</span>
@@ -29,7 +29,8 @@ export const Sidebar = () => {
 
       {/* Navigation Links */}
       <nav className="flex-1 space-y-2 px-4 py-6">
-        <p className="mb-4 px-2 text-xs font-semibold tracking-wider text-blue-400 uppercase">
+        {/* Main Management Section */}
+        <p className="mb-3 px-2 text-xs font-bold tracking-wider text-blue-400 uppercase">
           Management
         </p>
 
@@ -60,9 +61,9 @@ export const Sidebar = () => {
           );
         })}
 
-        {/* Contoh Section Lain (Settings) */}
-        <div className="pt-4">
-          <p className="mb-4 px-2 text-xs font-semibold tracking-wider text-blue-400 uppercase">
+        {/* Settings Section */}
+        <div className="mt-2 pt-6">
+          <p className="mb-3 px-2 text-xs font-bold tracking-wider text-blue-400 uppercase">
             Settings
           </p>
           <Link
@@ -70,20 +71,27 @@ export const Sidebar = () => {
             className={cn(
               "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
               pathname === "/dashboard/profile"
-                ? "bg-blue-600 text-white"
+                ? "bg-blue-600 text-white shadow-md shadow-blue-900/20"
                 : "text-blue-200 hover:bg-blue-900 hover:text-white",
             )}
           >
-            <Settings className="h-5 w-5 text-blue-400 group-hover:text-white" />
+            <Settings
+              className={cn(
+                "h-5 w-5 transition-colors",
+                pathname === "/dashboard/profile"
+                  ? "text-white"
+                  : "text-blue-400 group-hover:text-white",
+              )}
+            />
             Profile
           </Link>
         </div>
       </nav>
 
       {/* Footer / User Profile */}
-      <div className="mt-auto p-4">
-        <div className="flex items-center gap-3 rounded-xl border border-blue-800 bg-blue-900/50 p-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-600 bg-blue-700 text-sm font-bold">
+      <div className="mt-auto border-t border-blue-900/50 p-4">
+        <div className="flex cursor-pointer items-center gap-3 rounded-xl border border-blue-800 bg-blue-900/40 p-3 transition-colors hover:bg-blue-900/60">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-600 bg-blue-700 text-sm font-bold shadow-sm">
             JD
           </div>
           <div className="flex-1 overflow-hidden">
@@ -91,9 +99,9 @@ export const Sidebar = () => {
             <p className="truncate text-xs text-blue-300">Organizer</p>
           </div>
           <button
-            className="text-blue-300 transition-colors hover:text-red-400"
+            className="rounded-md p-1 text-blue-300 transition-colors hover:bg-red-400/10 hover:text-red-400"
             title="Logout"
-            // Tambahkan fungsi logout next-auth nanti di sini
+            // Tambahkan handler logout di sini nanti
           >
             <LogOut className="h-5 w-5" />
           </button>
