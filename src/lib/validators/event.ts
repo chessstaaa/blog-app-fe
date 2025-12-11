@@ -15,7 +15,6 @@ export const eventSchema = z
     price: z.coerce.number().min(0),
     availableSeats: z.coerce.number().min(1),
     category: z.string().min(1, { message: "Pilih kategori event" }),
-    // Update: Tambahan validasi gambar
     image: z
       .any()
       .refine((file) => file instanceof File || typeof file === "string", {
