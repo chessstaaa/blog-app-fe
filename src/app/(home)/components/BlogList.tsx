@@ -1,32 +1,35 @@
+// src/app/(home)/components/BlogList.tsx
 "use client";
 
-import BlogCard from "./BlogCard";
-import { Blog } from "@/types/blog";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
+import BlogCard from "./BlogCard";
+import { Blog } from "@/types/blog";
 
 const BlogList = () => {
   const { data: blogs, isPending } = useQuery({
     queryKey: ["blogs"],
     queryFn: async () => {
-      const users = await axiosInstance.get<Blog[]>(
-        "/api/data/Blogs?sortBy=%60created%60%20desc",
+      const res = await axiosInstance.get<Blog[]>(
+        "/api/data/Blogs?sortBy=%60created%60%20desc"
       );
-      return users.data;
+      return res.data;
     },
   });
 
-  return (
-    <div className="container mx-auto grid grid-cols-3 gap-8 p-4">
-      {isPending && (
-        <div className="col-span-3 my-16 text-center">
-          <p className="text-2xl font-bold">Loading...</p>
-        </div>
-      )}
+  if (isPending) {
+    return (
+      <div className="my-16 text-center">
+        <p className="text-xl font-semibold">Loading...</p>
+      </div>
+    );
+  }
 
-      {blogs?.map((blog) => {
-        return <BlogCard key={blog.objectId} blog={blog} />;
-      })}
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      {blogs?.slice(0, 3).map((blog) => (
+        <BlogCard key={blog.objectId} blog={blog} />
+      ))}
     </div>
   );
 };

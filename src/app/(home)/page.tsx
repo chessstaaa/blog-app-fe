@@ -1,13 +1,16 @@
 import Navbar from "@/components/Navbar";
-import BlogList from "./components/BlogList";
 import Jumbotron from "./components/Jumbotron";
+import Footer from "@/components/Footer";
+import BlogHome from "./components/BlogHome";
+import HeroBanner from "./components/HeroBanner";
 
 const Home = () => {
   return (
     <div>
       <Navbar />
-      <Jumbotron />
-      <BlogList />
+      <HeroBanner />
+      <BlogHome />
+      <Footer />
     </div>
   );
 };
