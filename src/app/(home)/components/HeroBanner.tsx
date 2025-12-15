@@ -13,12 +13,12 @@ interface BannerItem {
 const banners: BannerItem[] = [
     {
         id: 1,
-        image: "/banners/yoasobi.jpg",
+        image: "/thumbnail.avif",
         alt: "Yoasobi Asia Tour 2024-2025",
     },
     {
         id: 2,
-        image: "/banners/banner-2.jpg",
+        image: "/thumbnail.avif",
         alt: "Music Festival",
     },
 ];
