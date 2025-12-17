@@ -47,8 +47,8 @@ export function LoginForm({
 
   const { mutateAsync: login, isPending } = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const result = await axiosInstance.post("/api/users/login", {
-        login: data.email,
+      const result = await axiosInstance.post("/auth/login", {
+        email: data.email,
         password: data.password,
       });
 
@@ -58,7 +58,7 @@ export function LoginForm({
       await signIn("credentials", {
         email: result.email,
         objectId: result.objectId,
-        userToken: result["user-token"],
+        userToken: result.accessToken,
         redirect: false,
       });
 

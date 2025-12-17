@@ -17,20 +17,24 @@ import {
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
+import { useSession } from "next-auth/react";
+import { CategoryTypes } from "@/types/category";
 
 interface EventFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: EventFormValues) => void;
   initialData?: EventFormValues | null;
 }
 
-export function EventForm({
-  open,
-  onOpenChange,
-  onSubmit,
-  initialData,
-}: EventFormProps) {
+export function EventForm({ open, onOpenChange, initialData }: EventFormProps) {
+  const router = useRouter();
+  const session = useSession();
+  const queryClient = useQueryClient();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const {
@@ -40,7 +44,7 @@ export function EventForm({
     watch,
     reset,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -96,9 +100,45 @@ export function EventForm({
   };
 
   const submitHandler = (data: EventFormValues) => {
-    onSubmit(data);
-    onOpenChange(false);
+    write(data);
   };
+
+  const { mutateAsync: write, isPending } = useMutation({
+    mutationFn: async (data: EventFormValues) => {
+      const formData = new FormData();
+
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+      formData.append("categoryId", data.category);
+      formData.append("location", data.location);
+      formData.append("price", data.price.toString());
+      formData.append("startAt", new Date(data.startDate).toISOString());
+      formData.append("endAt", new Date(data.endDate).toISOString());
+      formData.append("totaSeats", data.availableSeats.toString());
+      formData.append("isFree", String(data.ticketType === "Free"));
+      formData.append("image", data.image);
+
+      await axiosInstance.post(`/event`, formData, {
+        headers: { Authorization: `Bearer ${session.data?.user.userToken}` },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Create event success");
+      queryClient.invalidateQueries({ queryKey: ["event"] });
+      onOpenChange(false);
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data.message ?? "Something went wrong!");
+    },
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const categories = await axiosInstance.get<CategoryTypes[]>("/category");
+      return categories.data;
+    },
+  });
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -188,10 +228,11 @@ export function EventForm({
                         <SelectValue placeholder="Select..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Music">Musik</SelectItem>
-                        <SelectItem value="Workshop">Workshop</SelectItem>
-                        <SelectItem value="Seminar">Seminar</SelectItem>
-                        <SelectItem value="Sports">Olahraga</SelectItem>
+                        {categories?.map((category) => (
+                          <SelectItem value={category.id.toString()}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )}
@@ -316,8 +357,8 @@ export function EventForm({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting
+              <Button type="submit" disabled={isPending}>
+                {isPending
                   ? "Saving..."
                   : initialData
                     ? "Save Changes"
