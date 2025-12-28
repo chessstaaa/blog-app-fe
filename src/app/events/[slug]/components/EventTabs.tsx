@@ -1,0 +1,221 @@
+"use client"
+import { useState, useEffect } from "react"
+import { Event } from "@/types/event"
+import { tickets } from "@/lib/tickets"
+import { vouchers } from "@/lib/voucher"
+
+export default function EventTabs({ event }: { event: Event }) {
+  const related = tickets.filter(t => t.eventId === event.id)
+
+  const MAX_PER_TICKET = 5
+
+  const [tab, setTab] = useState<"desc" | "ticket">("ticket")
+  const [cart, setCart] = useState<Record<number, number>>({})
+  const [voucherCode, setVoucherCode] = useState("")
+  const [discount, setDiscount] = useState(0)
+  const [voucherError, setVoucherError] = useState("")
+
+  // const soldOutEvent = related.length > 0 && related.every(t => t.quantityAvailable === 0)
+  // if (soldOutEvent) {
+  //   return (
+  //     <div className="bg-white rounded-2xl p-6 text-center space-y-3">
+  //       <p className="text-red-500 font-semibold text-lg">🚫 SOLD OUT</p>
+  //       <p className="text-gray-600">All tickets have been sold.</p>
+  //     </div>
+  //   )
+  // }
+
+  const soldOutEvent = related.length > 0 && related.every(t => t.quantityAvailable === 0)
+
+  function changeQty(id: number, delta: number) {
+    setCart(prev => {
+      const current = prev[id] || 0
+      const stock = related.find(t => t.id === id)?.quantityAvailable || 0
+      const maxAllowed = Math.min(stock, MAX_PER_TICKET)
+      const next = Math.max(0, Math.min(maxAllowed, current + delta))
+      return { ...prev, [id]: next }
+    })
+  }
+
+  const subtotal = Object.entries(cart).reduce((sum, [id, qty]) => {
+    const t = related.find(x => x.id === Number(id))
+    return sum + (t ? (event.isFree ? 0 : t.price * qty) : 0)
+  }, 0)
+
+  const relatedVoucher = vouchers.find(v => v.eventId === event.id && v.code === voucherCode)
+
+  useEffect(() => {
+    setDiscount(0)
+    setVoucherError("")
+  }, [JSON.stringify(cart)])
+
+  function applyVoucher() {
+    if (event.isFree) return setVoucherError("Voucher not applicable for free events")
+    if (subtotal === 0) return setVoucherError("Select ticket first")
+    if (!relatedVoucher) return setVoucherError("Invalid voucher")
+
+    const now = new Date()
+    if (now < new Date(relatedVoucher.startAt) || now > new Date(relatedVoucher.endAt))
+      return setVoucherError("Voucher expired")
+
+    if (relatedVoucher.usedCount >= relatedVoucher.usageLimit)
+      return setVoucherError("Voucher quota exceeded")
+
+    const safeDiscount = Math.min(subtotal, relatedVoucher.discountAmount)
+    setDiscount(safeDiscount)
+    setVoucherError("")
+  }
+
+  const total = subtotal > 0 ? Math.max(0, subtotal - discount) : 0
+
+  return (
+    <div className="bg-white rounded-2xl p-4 space-y-4 shadow-sm">
+
+      <div className="flex gap-6 border-b">
+        <button onClick={() => setTab("desc")}
+          className={`pb-2 font-semibold ${tab === "desc" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>
+          Description
+        </button>
+        <button onClick={() => setTab("ticket")}
+          className={`pb-2 font-semibold ${tab === "ticket" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>
+          Tickets
+        </button>
+      </div>
+
+      {tab === "desc" && (
+        <p className="text-gray-700 leading-relaxed">{event.description}</p>
+      )}
+
+      {tab === "ticket" && (
+        <div className="grid grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            {soldOutEvent && (
+              <div className="border border-red-200 bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-center font-semibold">
+                🚫 All tickets are sold out
+              </div>
+            )}
+
+            {related.map(t => {
+              const soldOut = t.quantityAvailable === 0
+              const current = cart[t.id] || 0
+              const reachedLimit = current >= MAX_PER_TICKET
+
+              return (
+                <div key={t.id} className={`border rounded-xl p-4 ${soldOut && "opacity-60"}`}>
+                  <div className="flex justify-between mb-2">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      {t.name}
+                      {event.isFree && (
+                        <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
+                          FREE EVENT
+                        </span>
+                      )}
+                    </h3>
+                    {soldOut && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full">SOLD OUT</span>}
+                  </div>
+
+                  {!event.isFree && (
+                    <p className="text-sm text-gray-500 mb-2">{t.quantityAvailable} seats left</p>
+                  )}
+
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-blue-500">
+                      {event.isFree ? "FREE" : `Rp ${t.price.toLocaleString("id-ID")}`}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      
+                      {/* MINUS */}
+                      <button
+                        disabled={event.isFree || soldOut || current === 0}
+                        onClick={() => changeQty(t.id, -1)}
+                        className={`w-8 h-8 border rounded-lg
+                          ${event.isFree || soldOut
+                            ? "cursor-not-allowed bg-gray-200"
+                            : "hover:bg-gray-100"
+                          }`}
+                      >
+                        −
+                      </button>
+
+                      <span className="w-6 text-center">{current}</span>
+
+                      {/* PLUS */}
+                      <button
+                        disabled={event.isFree || soldOut || reachedLimit}
+                        onClick={() => changeQty(t.id, 1)}
+                        className={`w-8 h-8 rounded-lg
+                          ${event.isFree || soldOut || reachedLimit
+                            ? "cursor-not-allowed bg-gray-200"
+                            : "bg-blue-500 text-white hover:bg-slate-400"
+                          }`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {reachedLimit && (
+                    <p className="text-xs text-red-500 mt-2">
+                      *Max {MAX_PER_TICKET} tickets per person
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="space-y-4">
+            <div className="border rounded-xl p-4">
+              <p className="font-semibold mb-1">Total price</p>
+              {/* <p className="text-2xl font-bold text-blue-500 mb-4">
+                Rp {total.toLocaleString("id-ID")}
+              </p> */}
+              <p className="text-2xl font-bold mb-4">
+                {event.isFree ? (
+                  <span className="text-blue-500">-</span>
+                ) : (
+                  <span className="text-blue-500">
+                    Rp {total.toLocaleString("id-ID")}
+                  </span>
+                )}
+              </p>
+
+              <button disabled={total === 0}
+                className={`w-full py-2 rounded-xl ${total === 0 ? "bg-slate-200" : "bg-blue-500 text-white hover:bg-slate-400"}`}>
+                Checkout
+              </button>
+            </div>
+
+            <div className="border rounded-xl p-4">
+              <p className="font-semibold mb-1">Voucher Code</p>
+              <div className="flex gap-2">
+                <input
+                  value={voucherCode}
+                  onChange={e => setVoucherCode(e.target.value.toUpperCase())}
+                  className="border px-3 py-2 rounded-full w-full"
+                  placeholder="XXXX"
+                />
+                <button onClick={applyVoucher}
+                  className="px-4 rounded-full bg-blue-500 text-white hover:bg-slate-400">
+                  Apply
+                </button>
+              </div>
+
+              {relatedVoucher && !voucherError && (
+                <div className="mt-2 text-sm bg-slate-50 border p-2 rounded">
+                  <b>{relatedVoucher.code}</b> – Rp {relatedVoucher.discountAmount.toLocaleString("id-ID")} off<br />
+                  Remaining: {relatedVoucher.usageLimit - relatedVoucher.usedCount}
+                </div>
+              )}
+
+              {voucherError && (
+                <p className="text-xs text-red-500 mt-2">{voucherError}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

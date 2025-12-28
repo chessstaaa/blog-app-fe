@@ -1,47 +1,50 @@
-import React from 'react'
-import { FaRegCopyright } from "react-icons/fa"
+import Link from "next/link";
+import { FaTwitter, FaFacebookF, FaInstagram, FaTicketAlt } from "react-icons/fa";
 
-const Footer = () => {
-  return (
-    <footer className="bg-white border-t-2 border-[#3f3f3f] w-full">
-      <div className="container mx-auto px-4 py-10">
-        <div className="flex flex-col gap-10 sm:flex-row sm:items-center sm:justify-between">
-          
-          {/* Footer Links */}
-          <div className="flex flex-col gap-3">
-            <a href="#" className="font-semibold text-black hover:text-[#99a2aa] transition">
-              About Us
-            </a>
-            <a href="#" className="font-semibold text-black hover:text-[#99a2aa] transition">
-              Contact Us
-            </a>
-            <a href="#" className="font-semibold text-black hover:text-[#99a2aa] transition">
-              FAQ
-            </a>
-            <a href="#" className="font-semibold text-black hover:text-[#99a2aa] transition">
-              Privacy Policy
-            </a>
-            <a href="#" className="font-semibold text-black hover:text-[#99a2aa] transition">
-              Terms of Service
-            </a>
-            <a href="#" className="font-semibold text-black hover:text-[#99a2aa] transition">
-              Careers
-            </a>
-          </div>
+export default function Footer() {
+    return (
+        <footer className="bg-white border-t-2">
+            <div className="container mx-auto text-center px-4 py-10">
 
-          {/* Footer Branding */}
-          <div className="space-y-4 text-black">
-            <p className="text-2xl font-bold">LOKET<span className="">CO</span></p>
-            <p className="flex items-center gap-1 text-sm text-[#99a2aa]">
-              <FaRegCopyright />
-              2025 LOKETCO. All rights reserved.
-            </p>
-          </div>
+                {/* Logo */}
+                <h2 className="text-2xl font-bold flex items-center justify-center gap-1 mb-6">
+                    <FaTicketAlt className="text-3xl" />
+                    LOKET<span>CO</span>
+                </h2>
 
-        </div>
-      </div>
-    </footer>
-  )
+                {/* Navigation */}
+                <nav className="flex justify-center gap-8 text-sm uppercase tracking-widest mb-8">
+                    <Link href="#" className="hover:underline underline-offset-4 decoration-2 transition">Home</Link>
+                    <Link href="#" className="hover:underline underline-offset-4 decoration-2 transition">About</Link>
+                    <Link href="#" className="hover:underline underline-offset-4 decoration-2 transition">Blog</Link>
+                    <Link href="#" className="hover:underline underline-offset-4 decoration-2 transition">Contact</Link>
+                    <Link href="#" className="hover:underline underline-offset-4 decoration-2 transition">Terms</Link>
+                    <Link href="#" className="hover:underline underline-offset-4 decoration-2 transition">Privacy</Link>
+                </nav>
+
+                {/* Social icons */}
+                <div className="flex justify-center gap-6 mb-10">
+                    <Social icon={<FaTwitter />} />
+                    <Social icon={<FaFacebookF />} />
+                    <Social icon={<FaInstagram />} />
+                </div>
+
+                {/* Copyright */}
+                <p className="text-xs text-gray-500">
+                    Copyright ©{new Date().getFullYear()} All rights reserved by loketco.com
+                </p>
+            </div>
+        </footer>
+    );
 }
 
-export default Footer
+function Social({ icon }: { icon: React.ReactNode }) {
+    return (
+        <a
+            href="#"
+            className="w-10 h-10 rounded-full border border-blue-500 flex items-center justify-center text-blue-500 hover:bg-blue-500 hover:text-black transition"
+        >
+            {icon}
+        </a>
+    );
+}
