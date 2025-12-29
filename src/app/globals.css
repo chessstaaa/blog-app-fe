@@ -113,6 +113,12 @@
 }
 
 @layer base {
+  :root {
+    /* HSL untuk Biru (221, 83%, 53%) */
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    /* ... variable lainnya */
+  }
   * {
     @apply border-border outline-ring/50;
   }
