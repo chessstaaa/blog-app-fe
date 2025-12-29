@@ -59,6 +59,7 @@ export function LoginForm({
         email: result.email,
         objectId: result.objectId,
         userToken: result.accessToken,
+        role: result.role,
         redirect: false,
       });
 

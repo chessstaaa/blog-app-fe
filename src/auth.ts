@@ -14,9 +14,17 @@ declare module "next-auth" {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
-      async authorize(user) {
-        if (!user) return null;
-        return user;
+      async authorize(credentials: any) {
+        if (credentials) {
+          return {
+            id: credentials.objectId,
+            email: credentials.email,
+            role: credentials.role,
+            accessToken: credentials.userToken,
+          };
+        }
+
+        return null;
       },
     }),
   ],

@@ -34,3 +34,7 @@ export const formatDate = (dateString: string) => {
     minute: "2-digit",
   });
 };
+
+export const formatNumber = (value: number) => {
+  return value.toLocaleString("id-ID");
+};

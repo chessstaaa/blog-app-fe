@@ -6,6 +6,7 @@ import { Settings, LogOut } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
 import { cn } from "@/lib/utils";
 import { sidebarItems } from "@/static/sidebar";
+import { signOut } from "next-auth/react";
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -101,7 +102,7 @@ export const Sidebar = () => {
           <button
             className="rounded-md p-1 text-blue-300 transition-colors hover:bg-red-400/10 hover:text-red-400"
             title="Logout"
-            // Tambahkan handler logout di sini nanti
+            onClick={() => signOut()}
           >
             <LogOut className="h-5 w-5" />
           </button>
