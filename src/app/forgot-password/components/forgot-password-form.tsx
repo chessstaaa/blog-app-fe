@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -13,19 +12,18 @@ import { axiosInstance } from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { signIn } from "next-auth/react";
-import Link from "next/link";
+import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import Link from "next/link";
 
 const formSchema = z.object({
   email: z.email(),
-  password: z.string().min(5, "Password must be at least 5 characters."),
 });
 
-export function LoginForm({
+export function ForgotPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -35,52 +33,44 @@ export function LoginForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
-  const { mutateAsync: login, isPending } = useMutation({
+  const { mutateAsync: forgotPassword, isPending } = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const result = await axiosInstance.post("/auth/login", {
+      const result = await axiosInstance.post("/auth/forgot-password", {
         email: data.email,
-        password: data.password,
       });
 
       return result.data;
     },
-    onSuccess: async (result) => {
-      await signIn("credentials", {
-        email: result.email,
-        objectId: result.objectId,
-        userToken: result.accessToken,
-        role: result.role,
-        redirect: false,
-      });
 
-      toast.success("Login success");
-      router.push("/");
+    onSuccess: async () => {
+      toast.success("Reset link sent! Please check your email.");
+      router.push("/login");
     },
-    onError: () => {
-      toast.error("Login failed");
+
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data.message ?? "Something went wrong!");
     },
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    await login(data);
+    await forgotPassword(data);
   }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      {/* Header Section */}
+      {/* Header Section (Pengganti CardHeader) */}
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Login to your account</h1>
+        <h1 className="text-2xl font-bold">Forgot Password</h1>
         <p className="text-muted-foreground text-sm text-balance">
-          Enter your email below to login to your account
+          Enter your email below to reset your password
         </p>
       </div>
 
       {/* Form Section */}
-      <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="form-forgot" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup className="grid gap-6">
           <Controller
             name="email"
@@ -103,51 +93,24 @@ export function LoginForm({
             )}
           />
 
-          <Controller
-            name="password"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="grid gap-2">
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Link
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-                <Input
-                  {...field}
-                  id="password"
-                  type="password"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="Your password"
-                  className="bg-background"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
+          {/* Button: Biru dan Wording yang benar */}
           <Button
             type="submit"
-            form="form-login"
+            form="form-forgot"
             disabled={isPending}
             className="w-full bg-blue-600 text-white hover:bg-blue-700"
           >
-            {isPending ? "Logging in..." : "Login"}
+            {isPending ? "Sending..." : "Send Reset Link"}
           </Button>
 
+          {/* Footer: Link kembali ke Login */}
           <div className="text-center text-sm">
-            Don&apos;t have an account?{" "}
+            Remember your password?{" "}
             <Link
-              href="/register"
+              href="/login"
               className="hover:text-primary underline underline-offset-4"
             >
-              Sign up
+              Back to Login
             </Link>
           </div>
         </FieldGroup>
