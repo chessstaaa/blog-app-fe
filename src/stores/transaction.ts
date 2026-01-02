@@ -33,7 +33,7 @@ type Store = {
   createTransaction: (payload: any) => Promise<void>
   uploadProof: (file: File) => Promise<void>
 
-  fetchMyHistory: () => Promise<Tx[]>   // ✅ WAJIB ADA DI TYPE
+  fetchMyHistory: () => Promise<Tx[]>
 }
 
 export const useTransactionStore = create<Store>((set, get) => ({
