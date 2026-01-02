@@ -43,15 +43,21 @@ export function SignupForm({
 
   const { mutateAsync: register, isPending } = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const res = await axiosInstance.post("/auth/register", data)
-      return res.data
+      const result = await axiosInstance.post("/auth/register", {
+        email: data.email,
+        password: data.password,
+        name: data.name,
+      });
+      return result.data;
     },
     onSuccess: () => {
-      toast.success("Register success")
-      router.push("/login")
+      toast.success("Register success");
+      router.push("/login");
     },
-    onError: () => toast.error("Register failed")
-  })
+    onError: () => {
+      toast.error("Register Failed");
+    },
+  });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     await register(data);
