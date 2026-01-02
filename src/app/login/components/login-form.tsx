@@ -57,18 +57,11 @@ export function LoginForm({
         redirect: false,
       });
 
-<<<<<<< HEAD
       toast.success("Login success");
       router.push("/");
     },
     onError: () => {
       toast.error("Login failed");
-=======
-    onSuccess: (user) => {
-      localStorage.setItem("token", user.accessToken)
-      toast.success("Login success")
-      router.push("/")
->>>>>>> d9379a8 (update alert transaksi mesti login)
     },
   });
 

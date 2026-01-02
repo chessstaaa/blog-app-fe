@@ -8,6 +8,8 @@ import { useTransactionStore } from "@/stores/transaction"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { getToken } from "@/lib/auth"
+import { useReviewStore } from "@/stores/review"
+
 
 type Ticket = {
   id: number
@@ -49,7 +51,7 @@ export default function EventTabs({ event }: { event: Event }) {
   })
 
   const MAX_PER_TICKET = 5
-  const [tab, setTab] = useState<"desc" | "ticket">("ticket")
+  const [tab, setTab] = useState<"desc" | "ticket" | "rating">("ticket")
   const [cart, setCart] = useState<Record<number, number>>({})
   const [voucherCode, setVoucherCode] = useState("")
   const [discount, setDiscount] = useState(0)
@@ -129,12 +131,45 @@ export default function EventTabs({ event }: { event: Event }) {
     router.push("/checkout")
   }
 
+  const reviewStore = useReviewStore()
+  const [reviews, setReviews] = useState<any[]>([])
+  const [rating, setRating] = useState(5)
+  const [comment, setComment] = useState("")
+
+  useEffect(() => {
+    reviewStore.getByEvent(event.id).then(setReviews)
+  }, [event.id])
+
+  const submitReview = async () => {
+    try {
+      await reviewStore.create({ eventId: event.id, rating, comment })
+      toast.success("Review submitted")
+      setComment("")
+      setReviews(await reviewStore.getByEvent(event.id))
+    } catch (e: any) {
+      if (e.message === "NO_LOGIN") toast.error("Please login to leave review")
+      else toast.error(e.response?.data?.message || "Failed to submit review")
+    }
+  }
+
 
   return (
     <div className="bg-white rounded-2xl p-4 space-y-4 shadow-sm">
       <div className="flex gap-6 border-b">
-        <button onClick={() => setTab("desc")} className={`pb-2 font-semibold ${tab === "desc" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>Description</button>
-        <button onClick={() => setTab("ticket")} className={`pb-2 font-semibold ${tab === "ticket" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>Tickets</button>
+        <button onClick={() => setTab("desc")}
+          className={`pb-2 font-semibold ${tab === "desc" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>
+          Description
+        </button>
+
+        <button onClick={() => setTab("ticket")}
+          className={`pb-2 font-semibold ${tab === "ticket" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>
+          Tickets
+        </button>
+
+        <button onClick={() => setTab("rating")}
+          className={`pb-2 font-semibold ${tab === "rating" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>
+          Ratings
+        </button>
       </div>
 
       {tab === "desc" && <p className="text-gray-700 leading-relaxed">{event.description}</p>}
@@ -215,6 +250,41 @@ export default function EventTabs({ event }: { event: Event }) {
           </div>
         </div>
       )}
+
+      {tab === "rating" && (
+        <div className="space-y-4">
+
+          <h3 className="font-bold text-lg">Reviews & Ratings</h3>
+
+          {reviews.map(r => (
+            <div key={r.id} className="border rounded-2xl p-3">
+              <p className="font-semibold">{r.user.name}</p>
+              <p className="text-yellow-500">⭐ {r.rating}/5</p>
+              <p className="text-sm text-gray-600">{r.comment}</p>
+            </div>
+          ))}
+
+          <div className="border rounded-xl p-4">
+            <p className="font-semibold mb-2">Leave a Review</p>
+
+            <select value={rating} onChange={e => setRating(+e.target.value)}
+              className="border rounded-full p-2 w-full mb-2">
+              {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} ⭐</option>)}
+            </select>
+
+            <textarea value={comment}
+              onChange={e => setComment(e.target.value)}
+              placeholder="Write your experience..."
+              className="border rounded-2xl p-2 w-full" />
+
+            <button onClick={submitReview}
+              className="mt-2 bg-blue-500 text-white w-full py-2 rounded-full hover:bg-blue-400">
+              Submit Review
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
