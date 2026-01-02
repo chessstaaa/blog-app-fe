@@ -1,4 +1,4 @@
-import { EventTypes } from "@/types/event";
+import { Event } from "@/types/event";
 import { formatIDR } from "@/lib/utils";
 import { MapPin, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface EventCardProps {
-  event: EventTypes;
-  handleEditClick: (event: EventTypes) => void;
+  event: Event;
+  handleEditClick: (event: Event) => void;
 }
 
 export function EventCard(props: EventCardProps) {
