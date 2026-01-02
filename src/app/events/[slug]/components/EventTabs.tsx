@@ -6,6 +6,8 @@ import axios from "axios"
 import { API_URL } from "@/lib/constants"
 import { useTransactionStore } from "@/stores/transaction"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { getToken } from "@/lib/auth"
 
 type Ticket = {
   id: number
@@ -95,6 +97,15 @@ export default function EventTabs({ event }: { event: Event }) {
   const total = Math.max(0, subtotal - discount)
 
   const checkout = async () => {
+    const token = getToken()
+    if (!token) {
+      toast.warning("Please login to continue", {
+        description: "You must login before purchasing tickets"
+      })
+      // router.push("/login") // tidak perlu
+      return
+    }
+
     const items = Object.entries(cart)
       .filter(([_, qty]) => qty > 0)
       .map(([id, qty]) => ({
@@ -102,7 +113,10 @@ export default function EventTabs({ event }: { event: Event }) {
         qty
       }))
 
-    if (items.length === 0) return alert("Select ticket first")
+    if (items.length === 0) {
+      toast.error("Select ticket first")
+      return
+    }
 
     resetTx()
     await createTransaction({
@@ -114,6 +128,7 @@ export default function EventTabs({ event }: { event: Event }) {
 
     router.push("/checkout")
   }
+
 
   return (
     <div className="bg-white rounded-2xl p-4 space-y-4 shadow-sm">
