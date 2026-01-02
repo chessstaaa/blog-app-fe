@@ -28,7 +28,7 @@ export function TransactionDetailDialog({
 
   const { mutateAsync: approved, isPending: pendingApprove } = useMutation({
     mutationFn: async (id: number) => {
-      await axiosInstance.post(`/approve/${id}`);
+      await axiosInstance.post(`/transactions/${id}/accept`);
     },
     onSuccess: () => {
       toast.success("Approve transaction success");
@@ -42,7 +42,7 @@ export function TransactionDetailDialog({
 
   const { mutateAsync: rejected, isPending: pendingRejected } = useMutation({
     mutationFn: async (id: number) => {
-      await axiosInstance.post(`/reject/${id}`);
+      await axiosInstance.post(`/transactions/${id}/reject`);
     },
     onSuccess: () => {
       toast.success("Reject transaction success");

@@ -34,8 +34,9 @@ export default function TransactionsPage() {
   const { data: transactions, isPending } = useQuery({
     queryKey: ["transactions", debouncedSearch, filterStatus],
     queryFn: async () => {
-      const transactions =
-        await axiosInstance.get<TransactionTypes[]>("/transaction");
+      const transactions = await axiosInstance.get<TransactionTypes[]>(
+        "/transactions/dashboard",
+      );
       return transactions.data;
     },
   });
