@@ -1,4 +1,3 @@
-import { events } from "@/lib/events"
 import EventBrowser from "./components/EventBrowser"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
@@ -9,7 +8,7 @@ export default function EventPage() {
       <Navbar />
       <div className="container mx-auto px-4 py-10">
         {/* <h1 className="text-3xl font-bold mb-6">Browse Events</h1> */}
-        <EventBrowser events={events} />
+        <EventBrowser />
       </div>
       <Footer />
     </>

@@ -7,6 +7,8 @@ import { Separator } from "@radix-ui/react-separator";
 import { EventForm } from "@/components/app/event/AddEventForm";
 import { EventFormValues } from "@/lib/validators/event";
 import { formatIDR } from "@/lib/utils";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createEvent } from '@/lib/events';
 
 const initialEvents = [
   {
@@ -31,26 +33,57 @@ export default function EventsPage() {
     null,
   );
 
-  const handleSaveEvent = (data: EventFormValues) => {
+  const queryClient = useQueryClient();
+
+  const createEventMutation = useMutation({
+    mutationFn: createEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+
+  const handleSaveEvent = async (data: EventFormValues) => {
     let imageUrl = data.image;
     if (data.image instanceof File) {
       imageUrl = URL.createObjectURL(data.image);
     }
 
-    if (editingEvent) {
-      const updatedEvents = events.map((ev) =>
-        ev.title === editingEvent.title
-          ? { ...ev, ...data, image: imageUrl }
-          : ev,
-      );
-      setEvents(updatedEvents);
-    } else {
-      const newEvent = {
-        id: Math.random(),
-        ...data,
-        image: imageUrl,
-      };
-      setEvents([newEvent, ...events]);
+    const eventData = {
+      title: data.title,
+      description: data.description,
+      location: data.location,
+      startAt: data.startDate,
+      endAt: data.endDate,
+      price: data.price,
+      totalSeats: data.availableSeats,
+      availableSeats: data.availableSeats,
+      isFree: data.ticketType === 'Free',
+      image: imageUrl as string,
+      category: { id: 1, name: data.category },
+      organizer: { id: 1, name: 'Default Organizer' },
+      slug: data.title.toLowerCase().replace(/\s+/g, '-'),
+    };
+
+    try {
+      await createEventMutation.mutateAsync(eventData);
+      // Update local state for UI
+      if (editingEvent) {
+        const updatedEvents = events.map((ev) =>
+          ev.title === editingEvent.title
+            ? { ...ev, ...data, image: imageUrl }
+            : ev,
+        );
+        setEvents(updatedEvents);
+      } else {
+        const newEvent = {
+          id: Math.random(),
+          ...data,
+          image: imageUrl,
+        };
+        setEvents([newEvent, ...events]);
+      }
+    } catch (error) {
+      console.error('Error creating event:', error);
     }
   };
 

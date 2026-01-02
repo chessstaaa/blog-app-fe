@@ -1,29 +1,57 @@
 "use client"
 import { useState, useEffect } from "react"
 import { Event } from "@/types/event"
-import { tickets } from "@/lib/tickets"
-import { vouchers } from "@/lib/voucher"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { API_URL } from "@/lib/constants"
+import { useTransactionStore } from "@/stores/transaction"
+import { useRouter } from "next/navigation"
+
+type Ticket = {
+  id: number
+  name: string
+  price: number
+  quantityAvailable: number
+}
+
+type Voucher = {
+  id: number
+  code: string
+  discountAmount: number
+  usageLimit: number
+  usedCount: number
+  startAt: string
+  endAt: string
+}
 
 export default function EventTabs({ event }: { event: Event }) {
-  const related = tickets.filter(t => t.eventId === event.id)
+  const router = useRouter()
+  const createTransaction = useTransactionStore(s => s.createTransaction)
+  const resetTx = useTransactionStore(s => s.resetTx)
+
+  const [selectedTickets, setSelectedTickets] = useState<
+    { id: number; name: string; price: number; qty: number }[]
+  >([])
+
+  const [voucherId, setVoucherId] = useState<number | undefined>()
+  const [pointsUsed] = useState(0)
+
+  const { data: related = [] } = useQuery<Ticket[]>({
+    queryKey: ["tickets", event.id],
+    queryFn: async () => (await axios.get(`${API_URL}/tickets?eventId=${event.id}`)).data
+  })
+
+  const { data: vouchers = [] } = useQuery<Voucher[]>({
+    queryKey: ["vouchers", event.id],
+    queryFn: async () => (await axios.get(`${API_URL}/voucher?eventId=${event.id}`)).data
+  })
 
   const MAX_PER_TICKET = 5
-
   const [tab, setTab] = useState<"desc" | "ticket">("ticket")
   const [cart, setCart] = useState<Record<number, number>>({})
   const [voucherCode, setVoucherCode] = useState("")
   const [discount, setDiscount] = useState(0)
   const [voucherError, setVoucherError] = useState("")
-
-  // const soldOutEvent = related.length > 0 && related.every(t => t.quantityAvailable === 0)
-  // if (soldOutEvent) {
-  //   return (
-  //     <div className="bg-white rounded-2xl p-6 text-center space-y-3">
-  //       <p className="text-red-500 font-semibold text-lg">🚫 SOLD OUT</p>
-  //       <p className="text-gray-600">All tickets have been sold.</p>
-  //     </div>
-  //   )
-  // }
 
   const soldOutEvent = related.length > 0 && related.every(t => t.quantityAvailable === 0)
 
@@ -32,8 +60,7 @@ export default function EventTabs({ event }: { event: Event }) {
       const current = prev[id] || 0
       const stock = related.find(t => t.id === id)?.quantityAvailable || 0
       const maxAllowed = Math.min(stock, MAX_PER_TICKET)
-      const next = Math.max(0, Math.min(maxAllowed, current + delta))
-      return { ...prev, [id]: next }
+      return { ...prev, [id]: Math.max(0, Math.min(maxAllowed, current + delta)) }
     })
   }
 
@@ -42,7 +69,7 @@ export default function EventTabs({ event }: { event: Event }) {
     return sum + (t ? (event.isFree ? 0 : t.price * qty) : 0)
   }, 0)
 
-  const relatedVoucher = vouchers.find(v => v.eventId === event.id && v.code === voucherCode)
+  const relatedVoucher = vouchers.find(v => v.code === voucherCode)
 
   useEffect(() => {
     setDiscount(0)
@@ -57,47 +84,58 @@ export default function EventTabs({ event }: { event: Event }) {
     const now = new Date()
     if (now < new Date(relatedVoucher.startAt) || now > new Date(relatedVoucher.endAt))
       return setVoucherError("Voucher expired")
-
     if (relatedVoucher.usedCount >= relatedVoucher.usageLimit)
       return setVoucherError("Voucher quota exceeded")
 
-    const safeDiscount = Math.min(subtotal, relatedVoucher.discountAmount)
-    setDiscount(safeDiscount)
+    setVoucherId(relatedVoucher.id)
+    setDiscount(Math.min(subtotal, relatedVoucher.discountAmount))
     setVoucherError("")
   }
 
-  const total = subtotal > 0 ? Math.max(0, subtotal - discount) : 0
+  const total = Math.max(0, subtotal - discount)
+
+  const checkout = async () => {
+    const items = Object.entries(cart)
+      .filter(([_, qty]) => qty > 0)
+      .map(([id, qty]) => ({
+        ticketId: Number(id),
+        qty
+      }))
+
+    if (items.length === 0) return alert("Select ticket first")
+
+    resetTx()
+    await createTransaction({
+      eventId: event.id,
+      items,
+      voucherId,
+      pointsUsed
+    })
+
+    router.push("/checkout")
+  }
 
   return (
     <div className="bg-white rounded-2xl p-4 space-y-4 shadow-sm">
-
       <div className="flex gap-6 border-b">
-        <button onClick={() => setTab("desc")}
-          className={`pb-2 font-semibold ${tab === "desc" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>
-          Description
-        </button>
-        <button onClick={() => setTab("ticket")}
-          className={`pb-2 font-semibold ${tab === "ticket" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>
-          Tickets
-        </button>
+        <button onClick={() => setTab("desc")} className={`pb-2 font-semibold ${tab === "desc" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>Description</button>
+        <button onClick={() => setTab("ticket")} className={`pb-2 font-semibold ${tab === "ticket" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}>Tickets</button>
       </div>
 
-      {tab === "desc" && (
-        <p className="text-gray-700 leading-relaxed">{event.description}</p>
-      )}
+      {tab === "desc" && <p className="text-gray-700 leading-relaxed">{event.description}</p>}
 
       {tab === "ticket" && (
         <div className="grid grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             {soldOutEvent && (
-              <div className="border border-red-200 bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-center font-semibold">
+              <div className="border border-red-200 bg-red-50 text-red-600 p-4 rounded-xl text-center font-semibold">
                 🚫 All tickets are sold out
               </div>
             )}
 
             {related.map(t => {
-              const soldOut = t.quantityAvailable === 0
               const current = cart[t.id] || 0
+              const soldOut = t.quantityAvailable === 0
               const reachedLimit = current >= MAX_PER_TICKET
 
               return (
@@ -105,18 +143,12 @@ export default function EventTabs({ event }: { event: Event }) {
                   <div className="flex justify-between mb-2">
                     <h3 className="font-semibold flex items-center gap-2">
                       {t.name}
-                      {event.isFree && (
-                        <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
-                          FREE EVENT
-                        </span>
-                      )}
+                      {event.isFree && <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">FREE EVENT</span>}
                     </h3>
                     {soldOut && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full">SOLD OUT</span>}
                   </div>
 
-                  {!event.isFree && (
-                    <p className="text-sm text-gray-500 mb-2">{t.quantityAvailable} seats left</p>
-                  )}
+                  {!event.isFree && <p className="text-sm text-gray-500 mb-2">{t.quantityAvailable} seats left</p>}
 
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-blue-500">
@@ -124,42 +156,15 @@ export default function EventTabs({ event }: { event: Event }) {
                     </span>
 
                     <div className="flex items-center gap-2">
-                      
-                      {/* MINUS */}
-                      <button
-                        disabled={event.isFree || soldOut || current === 0}
-                        onClick={() => changeQty(t.id, -1)}
-                        className={`w-8 h-8 border rounded-lg
-                          ${event.isFree || soldOut
-                            ? "cursor-not-allowed bg-gray-200"
-                            : "hover:bg-gray-100"
-                          }`}
-                      >
-                        −
-                      </button>
-
+                      <button onClick={() => changeQty(t.id, -1)} disabled={current === 0 || soldOut}
+                        className={`w-8 h-8 border rounded-lg ${current === 0 || soldOut ? "bg-gray-200 cursor-not-allowed" : "hover:bg-gray-100"}`}>−</button>
                       <span className="w-6 text-center">{current}</span>
-
-                      {/* PLUS */}
-                      <button
-                        disabled={event.isFree || soldOut || reachedLimit}
-                        onClick={() => changeQty(t.id, 1)}
-                        className={`w-8 h-8 rounded-lg
-                          ${event.isFree || soldOut || reachedLimit
-                            ? "cursor-not-allowed bg-gray-200"
-                            : "bg-blue-500 text-white hover:bg-slate-400"
-                          }`}
-                      >
-                        +
-                      </button>
+                      <button onClick={() => changeQty(t.id, 1)} disabled={soldOut || reachedLimit}
+                        className={`w-8 h-8 rounded-lg ${soldOut || reachedLimit ? "bg-gray-200 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-slate-400"}`}>+</button>
                     </div>
                   </div>
 
-                  {reachedLimit && (
-                    <p className="text-xs text-red-500 mt-2">
-                      *Max {MAX_PER_TICKET} tickets per person
-                    </p>
-                  )}
+                  {reachedLimit && <p className="text-xs text-red-500 mt-2">*Max {MAX_PER_TICKET} tickets per person</p>}
                 </div>
               )
             })}
@@ -168,20 +173,8 @@ export default function EventTabs({ event }: { event: Event }) {
           <div className="space-y-4">
             <div className="border rounded-xl p-4">
               <p className="font-semibold mb-1">Total price</p>
-              {/* <p className="text-2xl font-bold text-blue-500 mb-4">
-                Rp {total.toLocaleString("id-ID")}
-              </p> */}
-              <p className="text-2xl font-bold mb-4">
-                {event.isFree ? (
-                  <span className="text-blue-500">-</span>
-                ) : (
-                  <span className="text-blue-500">
-                    Rp {total.toLocaleString("id-ID")}
-                  </span>
-                )}
-              </p>
-
-              <button disabled={total === 0}
+              <p className="text-2xl font-bold text-blue-500 mb-4">Rp {total.toLocaleString("id-ID")}</p>
+              <button disabled={total === 0} onClick={checkout}
                 className={`w-full py-2 rounded-xl ${total === 0 ? "bg-slate-200" : "bg-blue-500 text-white hover:bg-slate-400"}`}>
                 Checkout
               </button>
@@ -190,16 +183,9 @@ export default function EventTabs({ event }: { event: Event }) {
             <div className="border rounded-xl p-4">
               <p className="font-semibold mb-1">Voucher Code</p>
               <div className="flex gap-2">
-                <input
-                  value={voucherCode}
-                  onChange={e => setVoucherCode(e.target.value.toUpperCase())}
-                  className="border px-3 py-2 rounded-full w-full"
-                  placeholder="XXXX"
-                />
-                <button onClick={applyVoucher}
-                  className="px-4 rounded-full bg-blue-500 text-white hover:bg-slate-400">
-                  Apply
-                </button>
+                <input value={voucherCode} onChange={e => setVoucherCode(e.target.value.toUpperCase())}
+                  className="border px-3 py-2 rounded-full w-full" placeholder="XXXX" />
+                <button onClick={applyVoucher} className="px-4 rounded-full bg-blue-500 text-white hover:bg-slate-400">Apply</button>
               </div>
 
               {relatedVoucher && !voucherError && (
@@ -209,9 +195,7 @@ export default function EventTabs({ event }: { event: Event }) {
                 </div>
               )}
 
-              {voucherError && (
-                <p className="text-xs text-red-500 mt-2">{voucherError}</p>
-              )}
+              {voucherError && <p className="text-xs text-red-500 mt-2">{voucherError}</p>}
             </div>
           </div>
         </div>

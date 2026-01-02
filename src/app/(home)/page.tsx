@@ -8,9 +8,9 @@ import Footer from "@/components/Footer"
 const page = () => {
   return (
     <div className="">
-        <Navbar />
+      <Navbar />
       <div className="container mx-auto px-4 py-10">
-        
+
         {/* 1ST SECTION */}
         <FirstMainSec />
 

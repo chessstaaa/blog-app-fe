@@ -1,77 +1,65 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { axiosInstance } from "@/lib/axios";
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { axiosInstance } from "@/lib/axios"
+import { cn } from "@/lib/utils"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+import { Controller, useForm } from "react-hook-form"
+import { toast } from "sonner"
+import { z } from "zod"
 
 const formSchema = z.object({
-  email: z.email(),
-  password: z.string().min(5, "Password must be at least 5 characters."),
-});
+  email: z.string().email(),
+  password: z.string().min(5),
+})
+
+type LoginFormType = z.infer<typeof formSchema>
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const router = useRouter();
+  const router = useRouter()
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<LoginFormType>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+    defaultValues: { email: "", password: "" },
+  })
 
   const { mutateAsync: login, isPending } = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const result = await axiosInstance.post("/api/users/login", {
-        login: data.email,
-        password: data.password,
-      });
-
-      return result.data;
+    mutationFn: async (payload: LoginFormType) => {
+      const res = await axiosInstance.post("/auth/login", payload)
+      return res.data
     },
-    onSuccess: async (result) => {
-      await signIn("credentials", {
-        email: result.email,
-        objectId: result.objectId,
-        userToken: result["user-token"],
-        redirect: false,
-      });
 
-      toast.success("Login success");
-      router.push("/");
+    onSuccess: (user) => {
+      localStorage.setItem("token", user.accessToken)
+      toast.success("Login success")
+      router.push("/")
     },
-    onError: () => {
-      toast.error("Login failed");
-    },
-  });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    await login(data);
+    onError: () => toast.error("Login failed"),
+  })
+
+  async function onSubmit(data: LoginFormType) {
+    await login(data)
   }
 
   return (
@@ -83,22 +71,17 @@ export function LoginForm({
             Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               <Controller
                 name="email"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <Input
-                      {...field}
-                      id="email"
-                      type="email"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="m@example.com"
-                    />
+                    <FieldLabel>Email</FieldLabel>
+                    <Input {...field} type="email" />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -111,14 +94,8 @@ export function LoginForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input
-                      {...field}
-                      id="password"
-                      type="password"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="Your password"
-                    />
+                    <FieldLabel>Password</FieldLabel>
+                    <Input {...field} type="password" />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -126,19 +103,13 @@ export function LoginForm({
                 )}
               />
 
-              <Field>
-                <Button type="submit" form="form-login" disabled={isPending}>
-                  {isPending ? "Loading" : "Login"}
-                </Button>
-
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
-                </FieldDescription>
-              </Field>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Loading..." : "Login"}
+              </Button>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

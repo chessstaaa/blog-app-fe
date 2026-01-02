@@ -11,8 +11,11 @@ export default function EventFilter({
   onCategory: (c: string) => void
   onLocation: (l: string) => void
 }) {
-  const categories = Array.from(new Set(events.map(e => e.category.name)))
-  const locations = Array.from(new Set(events.map(e => e.location)))
+  const categories = Array.from(new Set(events.map(e => (typeof e.category === 'string' ? e.category : e.category?.name)).filter(Boolean)))
+  const locations = Array.from(new Set(events.map(e => e.location).filter(Boolean)))
+
+  console.log('Events:', events); // Debug: lihat data events
+  console.log('Categories:', categories); // Debug: lihat categories yang diekstrak
 
   return (
     <div className="flex flex-wrap gap-4 mb-6">

@@ -1,9 +1,14 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Event } from "@/types/event"
+import { API_URL } from "@/lib/constants"
 
 function formatRange(start: string, end: string) {
-  const opt: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" }
+  const opt: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }
   return `${new Date(start).toLocaleDateString("en-GB", opt)} – ${new Date(end).toLocaleDateString("en-GB", opt)}`
 }
 
@@ -18,35 +23,47 @@ export default function EventCard({ event }: { event: Event }) {
   const status = getStatus(event)
   const soldRatio = event.availableSeats / event.totalSeats
 
+  const categoryName =
+    typeof event.category === "string"
+      ? event.category
+      : event.category?.name || "-"
+
+  const organizerName =
+    typeof event.organizer === "string"
+      ? event.organizer
+      : event.organizer?.name || "-"
+
   return (
     <Link href={`/events/${event.slug}`} className="group block">
       <div className="relative rounded-2xl bg-white hover:shadow-md transition overflow-hidden border">
+
         {soldRatio < 0.15 && (
-          <span className="absolute top-3 right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
+          <span className="absolute z-20 top-3 right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
             Almost Sold Out
           </span>
         )}
 
-        <span className={`absolute top-3 left-3 text-xs px-3 py-1 rounded-full
+        <span
+          className={`absolute z-20 top-3 left-3 text-xs px-3 py-1 rounded-full
           ${status === "Upcoming" && "bg-blue-500 text-white"}
           ${status === "Ongoing" && "bg-green-500 text-white"}
           ${status === "Past" && "bg-gray-500 text-white"}
-        `}>
+          `}
+        >
           {status}
         </span>
 
-        <div className="relative h-52 w-full">
-          <Image
-            src={event.image}
+        <div className="relative h-52 w-full overflow-hidden">
+          <img
+            src={`${API_URL}/uploads/events/${event.image}`}
             alt={event.title}
-            fill
-            className="object-cover group-hover:scale-101 transition"
+            className="object-cover w-full h-full group-hover:scale-101 transition"
           />
         </div>
 
         <div className="p-4 space-y-2">
           <span className="inline-block text-xs bg-blue-500 text-white rounded-full px-3 py-1">
-            {event.category.name}
+            {categoryName}
           </span>
 
           <h3 className="font-bold truncate">{event.title}</h3>
@@ -72,7 +89,7 @@ export default function EventCard({ event }: { event: Event }) {
           </p>
 
           <p className="text-sm text-gray-600 pt-2">
-            {event.organizer.name}
+            {organizerName}
           </p>
         </div>
       </div>

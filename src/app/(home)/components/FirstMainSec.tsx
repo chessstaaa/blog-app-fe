@@ -8,21 +8,21 @@ import { useEffect, useState } from "react";
 const banners = [
     {
         id: 1,
-        title: "Brazil GP 2025",
+        title: "Brazil GP 2026",
         image: "/imgAssets/brazilgp-picture.jpeg",
         link: "/events/brazil-gp",
     },
     {
         id: 2,
-        title: "Abu Dhabi GP 2025",
+        title: "Abu Dhabi GP 2026",
         image: "/imgAssets/banner-2.jpg",
         link: "/events/abu-dhabi-gp",
     },
     {
         id: 3,
-        title: "Meet RB3",
-        image: "/imgAssets/banner-3.jpg",
-        link: "/events/meet-rb3",
+        title: "Australia GP 2026",
+        image: "/imgAssets/banner-4.jpg",
+        link: "/events/australia-gp-2026",
     },
 ];
 
