@@ -27,14 +27,14 @@ export default function EventsPage() {
     queryKey: ["events", isModalOpen, page],
     queryFn: async () => {
       const token = session?.user?.userToken;
-      const blogs = await axiosInstance.get<PageableResponse<Event>>(
+      const events = await axiosInstance.get<PageableResponse<Event>>(
         "/event/dashboard",
         {
           params: { page },
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      return blogs.data;
+      return events.data;
     },
     enabled: status === "authenticated",
   });

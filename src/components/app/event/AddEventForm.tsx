@@ -122,7 +122,7 @@ export function EventForm({ open, onOpenChange, initialData }: EventFormProps) {
     },
     onSuccess: () => {
       toast.success("Create event success");
-      queryClient.invalidateQueries({ queryKey: ["event"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       onOpenChange(false);
     },
     onError: (error: AxiosError<{ message: string }>) => {

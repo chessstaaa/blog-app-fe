@@ -81,7 +81,13 @@ export function VoucherForm({ open, onOpenChange }: VoucherFormProps) {
   const { data: events } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
-      const events = await axiosInstance.get<PageableResponse<Event>>("/event");
+      const token = session?.user?.userToken;
+      const events = await axiosInstance.get<PageableResponse<Event>>(
+        "/event/dashboard",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       return events.data;
     },
   });
