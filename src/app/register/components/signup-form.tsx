@@ -24,6 +24,7 @@ const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
   email: z.email(),
   password: z.string().min(5, "Password must be at least 5 characters."),
+  referralCode: z.string().optional(),
 });
 
 export function SignupForm({
@@ -38,6 +39,7 @@ export function SignupForm({
       name: "",
       email: "",
       password: "",
+      referralCode: "",
     },
   });
 
@@ -47,6 +49,7 @@ export function SignupForm({
         email: data.email,
         password: data.password,
         name: data.name,
+        referralCode: data.referralCode,
       });
       return result.data;
     },
@@ -132,6 +135,27 @@ export function SignupForm({
                   type="password"
                   aria-invalid={fieldState.invalid}
                   placeholder="Create a password"
+                  className="bg-background"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          {/* Referral Code */}
+          <Controller
+            name="referralCode"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="grid gap-2">
+                <FieldLabel htmlFor="referralCode">Referral Code</FieldLabel>
+                <Input
+                  {...field}
+                  id="referralCode"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="input referral code"
                   className="bg-background"
                 />
                 {fieldState.invalid && (

@@ -18,7 +18,7 @@ export default function ProfilePage() {
     queryKey: ["user"],
     queryFn: async () => {
       const token = session?.user?.userToken;
-      const user = await axiosInstance.get<UserTypes>("/user", {
+      const user = await axiosInstance.get<UserTypes>("/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
       return user.data;

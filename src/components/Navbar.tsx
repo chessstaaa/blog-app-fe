@@ -28,6 +28,13 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-2">
+          {isOrganizer && (
+            <Link href="/dashboard">
+              <Button className="rounded-full border bg-white text-black hover:bg-gray-100">
+                Dashboard
+              </Button>
+            </Link>
+          )}
           {!isLogin ? (
             <>
               <Link href="/login">
@@ -57,13 +64,6 @@ const Navbar = () => {
                 Logout
               </Button>
             </>
-          )}
-          {isOrganizer && (
-            <Link href="/dashboard">
-              <Button className="rounded-full border bg-white text-black hover:bg-gray-100">
-                Dashboard
-              </Button>
-            </Link>
           )}
         </div>
       </div>
