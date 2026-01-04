@@ -3,21 +3,20 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { FaTicketAlt, FaUserCircle } from "react-icons/fa";
-import { useEffect, useState } from "react";
-import { getToken, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 const Navbar = () => {
-  const [isLogin, setIsLogin] = useState(false);
-  const router = useRouter(); // 👈 WAJIB
+  const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user as any;
   const isOrganizer = user?.role === "organizer";
+  const isLogin = status === "authenticated";
 
-  useEffect(() => {
-    setIsLogin(!!getToken());
-  }, []);
+  const handleLogout = async () => {
+    // Logout via NextAuth
+    await signOut({ redirect: true, callbackUrl: "/login" });
+  };
 
   return (
     <div className="border-b-2 bg-white">
@@ -59,7 +58,7 @@ const Navbar = () => {
               </button>
 
               <Button
-                onClick={logout}
+                onClick={handleLogout}
                 className="rounded-full bg-red-500 text-white hover:bg-red-600"
               >
                 Logout

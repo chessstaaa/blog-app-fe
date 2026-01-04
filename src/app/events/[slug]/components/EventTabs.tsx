@@ -7,7 +7,7 @@ import { API_URL } from "@/lib/constants"
 import { useTransactionStore } from "@/stores/transaction"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { getToken } from "@/lib/auth"
+import { useSession } from "next-auth/react"
 import { useReviewStore } from "@/stores/review"
 
 
@@ -30,6 +30,7 @@ type Voucher = {
 
 export default function EventTabs({ event }: { event: Event }) {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const createTransaction = useTransactionStore(s => s.createTransaction)
   const resetTx = useTransactionStore(s => s.resetTx)
 
@@ -99,12 +100,10 @@ export default function EventTabs({ event }: { event: Event }) {
   const total = Math.max(0, subtotal - discount)
 
   const checkout = async () => {
-    const token = getToken()
-    if (!token) {
+    if (status !== "authenticated") {
       toast.warning("Please login to continue", {
         description: "You must login before purchasing tickets"
       })
-      // router.push("/login") // tidak perlu
       return
     }
 

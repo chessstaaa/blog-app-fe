@@ -1,7 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Event } from "@/types/event"
-import { API_URL } from "@/lib/constants"
 
 function formatRange(start: string, end: string) {
   const opt: Intl.DateTimeFormatOptions = {
@@ -53,12 +52,18 @@ export default function EventCard({ event }: { event: Event }) {
           {status}
         </span>
 
-        <div className="relative h-52 w-full overflow-hidden">
-          <img
-            src={`${API_URL}/uploads/events/${event.image}`}
-            alt={event.title}
-            className="object-cover w-full h-full group-hover:scale-101 transition"
-          />
+        <div className="relative h-52 w-full overflow-hidden bg-gray-100">
+          {event.image ? (
+            <img
+              src={event.image}
+              alt={event.title}
+              className="object-cover w-full h-full group-hover:scale-101 transition"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              No Image
+            </div>
+          )}
         </div>
 
         <div className="p-4 space-y-2">

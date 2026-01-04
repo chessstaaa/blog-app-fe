@@ -30,12 +30,18 @@ export default async function EventDetail({ params }: Props) {
         <div className="grid grid-cols-3 gap-4">
 
           <div className="lg:col-span-2 space-y-6">
-            <div className="w-full h-80 rounded-2xl overflow-hidden">
-              <img
-                src={`${API_URL}/uploads/events/${event.image}`}
-                alt={event.title}
-                className="w-full h-full object-cover"
-              />
+            <div className="w-full h-80 rounded-2xl overflow-hidden bg-gray-100">
+              {event.image ? (
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  Image not available
+                </div>
+              )}
             </div>
           </div>
 
