@@ -105,6 +105,8 @@ export function EventForm({ open, onOpenChange, initialData }: EventFormProps) {
     mutationFn: async (data: EventFormValues) => {
       const formData = new FormData();
 
+      if (initialData)
+        formData.append("id", data.id ? data.id.toString() : "0");
       formData.append("title", data.title);
       formData.append("description", data.description);
       formData.append("categoryId", data.category);
@@ -116,9 +118,16 @@ export function EventForm({ open, onOpenChange, initialData }: EventFormProps) {
       formData.append("isFree", String(data.ticketType === "Free"));
       formData.append("image", data.image);
       const token = session?.user?.userToken;
-      await axiosInstance.post(`/event`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      if (!initialData) {
+        await axiosInstance.post(`/event`, formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await axiosInstance.patch(`/event`, formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
     },
     onSuccess: () => {
       toast.success("Create event success");
@@ -139,7 +148,11 @@ export function EventForm({ open, onOpenChange, initialData }: EventFormProps) {
   });
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root
+      key={`modal-${initialData?.id || 0}`}
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <Dialog.Portal>
         <Dialog.Overlay className="animate-in fade-in-0 fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
         <Dialog.Content className="fixed top-[50%] left-[50%] z-50 grid max-h-[90vh] w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] gap-4 overflow-y-auto rounded-xl border border-blue-100 bg-white p-6 shadow-lg duration-200 sm:rounded-2xl">
