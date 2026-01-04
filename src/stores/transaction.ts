@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import axios from "axios"
+import { axiosInstance } from "@/lib/axios"
 import { API_URL } from "@/lib/constants"
 
 export type Tx = {
@@ -45,9 +45,6 @@ export const useTransactionStore = create<Store>((set, get) => ({
   resetTx: () => set({ tx: null, isPaying: false }),
 
   createTransaction: async (payload) => {
-    const token = localStorage.getItem("token")
-    if (!token) throw new Error("NO TOKEN")
-
     const items = payload.items.map(
       (i: { ticketId: number; qty: number }) => ({
         ticketId: i.ticketId,
@@ -55,8 +52,8 @@ export const useTransactionStore = create<Store>((set, get) => ({
       })
     )
 
-    const res = await axios.post(
-      `${API_URL}/transactions`,
+    const res = await axiosInstance.post(
+      `/transactions`,
       {
         eventId: payload.eventId,
         items,                                  // DTO (future)
@@ -67,7 +64,6 @@ export const useTransactionStore = create<Store>((set, get) => ({
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         }
       }
@@ -78,25 +74,20 @@ export const useTransactionStore = create<Store>((set, get) => ({
 
   uploadProof: async (file) => {
     const { tx } = get()
-    const token = localStorage.getItem("token")
 
     const fd = new FormData()
     fd.append("image", file)
 
-    const res = await axios.post(
-      `${API_URL}/transactions/${tx!.id}/proof`,
-      fd,
-      { headers: { Authorization: `Bearer ${token}` } }
+    const res = await axiosInstance.post(
+      `/transactions/${tx!.id}/proof`,
+      fd
     )
 
     set({ tx: res.data })
   },
 
   fetchMyHistory: async () => {
-    const token = localStorage.getItem("token")
-    const res = await axios.get(`${API_URL}/transactions/my`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    const res = await axiosInstance.get(`/transactions/my`)
     return res.data
   }
 }))
