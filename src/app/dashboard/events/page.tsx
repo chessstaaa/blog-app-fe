@@ -45,6 +45,7 @@ export default function EventsPage() {
 
   const handleEditClick = (event: Event) => {
     const data = {
+      id: event.id,
       title: event.title,
       description: event.description,
       location: event.location,
@@ -112,6 +113,7 @@ export default function EventsPage() {
 
       {/* Form Modal (Reusable untuk Create & Edit) */}
       <EventForm
+        key={`modal-${editingEvent?.id}`}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         initialData={editingEvent}

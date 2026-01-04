@@ -40,13 +40,6 @@ const Navbar = () => {
                   Register
                 </Button>
               </Link>
-              {isOrganizer && (
-                <Link href="/dashboard">
-                  <Button className="rounded-full border bg-white text-black hover:bg-gray-100">
-                    Dashboard
-                  </Button>
-                </Link>
-              )}
             </>
           ) : (
             <>
@@ -64,6 +57,13 @@ const Navbar = () => {
                 Logout
               </Button>
             </>
+          )}
+          {isOrganizer && (
+            <Link href="/dashboard">
+              <Button className="rounded-full border bg-white text-black hover:bg-gray-100">
+                Dashboard
+              </Button>
+            </Link>
           )}
         </div>
       </div>

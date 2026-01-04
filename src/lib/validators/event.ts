@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const eventSchema = z
   .object({
+    id: z.number().optional(),
     title: z.string().min(5, { message: "Nama event minimal 5 karakter" }),
     description: z
       .string()

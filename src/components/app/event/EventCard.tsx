@@ -75,6 +75,7 @@ export function EventCard(props: EventCardProps) {
             onClick={() => handleEditClick(props.event)}
             variant="outline"
             className="flex-1 border-blue-200 text-blue-700 hover:bg-blue-50"
+            disabled={event.availableSeats !== event.totalSeats}
           >
             Edit Detail
           </Button>
