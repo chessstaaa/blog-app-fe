@@ -31,7 +31,7 @@ interface EventFormProps {
 }
 
 export function EventForm({ open, onOpenChange, initialData }: EventFormProps) {
-  const session = useSession();
+  const { data: session, status } = useSession();
   const queryClient = useQueryClient();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -115,9 +115,9 @@ export function EventForm({ open, onOpenChange, initialData }: EventFormProps) {
       formData.append("totalSeats", data.availableSeats.toString());
       formData.append("isFree", String(data.ticketType === "Free"));
       formData.append("image", data.image);
-
+      const token = session?.user?.userToken;
       await axiosInstance.post(`/event`, formData, {
-        headers: { Authorization: `Bearer ${session.data?.user.userToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     },
     onSuccess: () => {

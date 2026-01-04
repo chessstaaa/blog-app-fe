@@ -7,7 +7,7 @@ import { Separator } from "@radix-ui/react-separator";
 import { VoucherForm } from "@/components/app/voucher/VoucherForm";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
-import { VoucherTypes } from "@/types/voucher";
+import { Voucher } from "@/types/voucher";
 import { formatIDR } from "@/lib/utils";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -32,7 +32,7 @@ export default function VouchersPage() {
   const { data: vouchers, isPending } = useQuery({
     queryKey: ["vouchers"],
     queryFn: async () => {
-      const blogs = await axiosInstance.get<VoucherTypes[]>("/voucher");
+      const blogs = await axiosInstance.get<Voucher[]>("/voucher");
       return blogs.data;
     },
   });

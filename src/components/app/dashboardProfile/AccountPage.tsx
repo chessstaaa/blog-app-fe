@@ -13,17 +13,19 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 
 export default function AccountPage() {
-  const session = useSession();
+  const { data: session, status } = useSession();
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
+      const token = session?.user?.userToken;
       const user = await axiosInstance.get<UserTypes>("/user", {
-        headers: { Authorization: `Bearer ${session.data?.user.userToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       return user.data;
     },
+    enabled: status === "authenticated",
   });
 
   useEffect(() => {
@@ -55,9 +57,9 @@ export default function AccountPage() {
       const mapData = {
         name: data.name,
       };
-
+      const token = session?.user?.userToken;
       await axiosInstance.post(`/user/update-profile`, mapData, {
-        headers: { Authorization: `Bearer ${session.data?.user.userToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     },
     onSuccess: () => {

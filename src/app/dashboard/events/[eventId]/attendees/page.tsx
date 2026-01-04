@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Search, Loader2 } from "lucide-react";
-import { AttendeeTypes } from "@/types/attendee";
+import { TransactionTypes } from "@/types/transaction";
 import { formatDate, formatIDR, useDebounce } from "@/lib/utils";
 import PaginationSection from "@/components/Pagination";
 import { parseAsInteger, useQueryState } from "nuqs";
@@ -23,12 +23,11 @@ export default function AttendeePage() {
   const { data: attendees, isPending } = useQuery({
     queryKey: ["attendees", debouncedSearch, page],
     queryFn: async () => {
-      const attendee = await axiosInstance.get<PageableResponse<AttendeeTypes>>(
-        `/attendee/${params.eventId}`,
-        {
-          params: { page },
-        },
-      );
+      const attendee = await axiosInstance.get<
+        PageableResponse<TransactionTypes>
+      >(`/attendee/${params.eventId}`, {
+        params: { page },
+      });
       return attendee.data;
     },
   });
@@ -73,7 +72,6 @@ export default function AttendeePage() {
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap">Ticket Code</th>
                 <th className="px-6 py-4">Attendee Name</th>
-                <th className="px-6 py-4">Ticket Type</th>
                 <th className="px-6 py-4">Total Payment</th>
                 <th className="px-6 py-4">Purchase Time</th>
               </tr>
@@ -107,7 +105,7 @@ export default function AttendeePage() {
                     className="transition-colors hover:bg-gray-50"
                   >
                     <td className="px-6 py-4 font-mono font-medium text-blue-600">
-                      {item.ticketCode}
+                      {item.ticketId}
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
@@ -117,16 +115,11 @@ export default function AttendeePage() {
                         {item.user.email}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                        {item.ticketCode}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {formatIDR(item.transaction.totalPrice)}
+                      {formatIDR(item.totalPrice)}
                     </td>
                     <td className="px-6 py-4 text-gray-500">
-                      {formatDate(item.transaction.createdAt)}
+                      {formatDate(item.createdAt)}
                     </td>
                   </tr>
                 ))

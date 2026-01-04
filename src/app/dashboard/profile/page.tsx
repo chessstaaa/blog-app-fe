@@ -12,16 +12,18 @@ import { useSession } from "next-auth/react";
 import { formatNumber } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const session = useSession();
+  const { data: session, status } = useSession();
 
   const { data: user } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
+      const token = session?.user?.userToken;
       const user = await axiosInstance.get<UserTypes>("/user", {
-        headers: { Authorization: `Bearer ${session.data?.user.userToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       return user.data;
     },
+    enabled: status === "authenticated",
   });
 
   return (

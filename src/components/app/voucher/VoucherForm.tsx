@@ -17,7 +17,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X, Ticket } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
-import { EventTypes } from "@/types/event";
+import { Event } from "@/types/event";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -46,7 +46,7 @@ export function VoucherForm({ open, onOpenChange }: VoucherFormProps) {
     },
   });
 
-  const session = useSession();
+  const { data: session, status } = useSession();
   const queryClient = useQueryClient();
 
   const submitHandler = (data: VoucherFormValues) => {
@@ -63,9 +63,9 @@ export function VoucherForm({ open, onOpenChange }: VoucherFormProps) {
         endAt: new Date(data.endDate).toISOString(),
         usageLimit: data.usageLimit,
       };
-
+      const token = session?.user?.userToken;
       await axiosInstance.post(`/voucher`, mapData, {
-        headers: { Authorization: `Bearer ${session.data?.user.userToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     },
     onSuccess: () => {
@@ -81,8 +81,7 @@ export function VoucherForm({ open, onOpenChange }: VoucherFormProps) {
   const { data: events } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
-      const events =
-        await axiosInstance.get<PageableResponse<EventTypes>>("/event");
+      const events = await axiosInstance.get<PageableResponse<Event>>("/event");
       return events.data;
     },
   });

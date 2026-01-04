@@ -11,18 +11,26 @@ import {
 } from "recharts";
 import { ArrowUp, Ticket, Users, CalendarDays } from "lucide-react";
 import { GraphCard } from "@/components/card/GraphCard";
-import { ChartData } from "@/types/dashboard";
+import { ChartData, DashboardTypes } from "@/types/dashboard";
 import { formatIDR } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios";
+import { useSession } from "next-auth/react";
 
 export default function DashboardOverviewPage() {
-  const monthlySalesData: ChartData[] = [
-    { name: "Jan", sales: 4000 },
-    { name: "Feb", sales: 3000 },
-    { name: "Mar", sales: 2000 },
-    { name: "Apr", sales: 2780 },
-    { name: "May", sales: 1890 },
-    { name: "Jun", sales: 2390 },
-  ];
+  const { data: session, status } = useSession();
+
+  const { data: dashboard, isPending } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => {
+      const token = session?.user?.userToken;
+      const blogs = await axiosInstance.get<DashboardTypes>("/dashboard", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return blogs.data;
+    },
+    enabled: status === "authenticated",
+  });
 
   return (
     <div>
@@ -34,25 +42,25 @@ export default function DashboardOverviewPage() {
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <GraphCard
           title="Total Sales"
-          value={formatIDR(45000000)}
+          value={formatIDR(dashboard?.totalSales || 0)}
           icon={CalendarDays}
           color="bg-blue-600"
         />
         <GraphCard
           title="Tickets Sold"
-          value="1,240"
+          value={formatIDR(dashboard?.ticketsSold || 0)}
           icon={Ticket}
           color="bg-green-600"
         />
         <GraphCard
           title="Active Events"
-          value="3"
+          value={formatIDR(dashboard?.activeEvents || 0)}
           icon={Users}
           color="bg-yellow-600"
         />
         <GraphCard
           title="Avg. Rating"
-          value="4.7 / 5"
+          value={`${formatIDR(dashboard?.avgRating || 0)}/5`}
           icon={ArrowUp}
           color="bg-indigo-600"
         />
@@ -66,7 +74,7 @@ export default function DashboardOverviewPage() {
 
         <ResponsiveContainer width="100%" height="80%">
           <BarChart
-            data={monthlySalesData}
+            data={dashboard?.monthlySales || []}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />

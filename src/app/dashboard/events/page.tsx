@@ -13,8 +13,10 @@ import { PageableResponse } from "@/types/pagination";
 import PaginationSection from "@/components/Pagination";
 import { EventCard } from "@/components/app/event/EventCard";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { useSession } from "next-auth/react";
 
 export default function EventsPage() {
+  const { data: session, status } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventFormValues | null>(
     null,
@@ -24,11 +26,17 @@ export default function EventsPage() {
   const { data: events, isPending } = useQuery({
     queryKey: ["events", isModalOpen, page],
     queryFn: async () => {
-      const blogs = await axiosInstance.get<PageableResponse<Event>>("/event", {
-        params: { page },
-      });
+      const token = session?.user?.userToken;
+      const blogs = await axiosInstance.get<PageableResponse<Event>>(
+        "/event/dashboard",
+        {
+          params: { page },
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       return blogs.data;
     },
+    enabled: status === "authenticated",
   });
 
   const onClickPagination = (page: number) => {
@@ -81,6 +89,13 @@ export default function EventsPage() {
           </div>
         )}
 
+        {/* Jika Data Kosong */}
+        {events?.data.length === 0 && (
+          <div className="rounded-xl border border-dashed border-gray-200 py-10 text-center text-gray-500">
+            No Data.
+          </div>
+        )}
+
         {events?.data.map((event) => (
           <EventCard
             key={event.id}
@@ -89,13 +104,6 @@ export default function EventsPage() {
           />
         ))}
       </div>
-
-      {/* Jika Data Kosong */}
-      {events?.data.length === 0 && (
-        <div className="rounded-xl border border-dashed border-gray-200 py-10 text-center text-gray-500">
-          No Data.
-        </div>
-      )}
 
       {/* Component Pagination */}
       {events?.meta && (

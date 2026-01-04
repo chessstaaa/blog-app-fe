@@ -1,6 +1,6 @@
-import { EventTypes } from "./event";
+import { Event } from "./event";
 import { UserTypes } from "./user";
-import { VoucherTypes } from "./voucher";
+import { Voucher } from "./voucher";
 
 export type TransactionStatus =
   | "WAITING_FOR_PAYMENT"
@@ -15,10 +15,10 @@ export interface TransactionTypes {
   userId: number;
   user: UserTypes;
   eventId: number;
-  event: EventTypes;
+  event: Event;
   ticketId: number;
   voucherId: number;
-  voucher: VoucherTypes;
+  voucher: Voucher;
   quantity: number;
   totalPrice: number;
   status: TransactionStatus;

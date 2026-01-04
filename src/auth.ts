@@ -20,7 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             id: credentials.objectId,
             email: credentials.email,
             role: credentials.role,
-            accessToken: credentials.userToken,
+            userToken: credentials.userToken,
           };
         }
 

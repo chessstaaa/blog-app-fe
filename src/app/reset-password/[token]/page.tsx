@@ -18,7 +18,7 @@ const ResetPassword = async (props: ResetPasswordProps) => {
               <GalleryVerticalEnd className="size-4" />
             </div>
             <span className="font-bold text-blue-900 dark:text-blue-400">
-              OrganizerApp.
+              LOKET CO
             </span>
           </a>
         </div>

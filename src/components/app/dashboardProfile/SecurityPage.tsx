@@ -12,7 +12,7 @@ import { AxiosError } from "axios";
 import { axiosInstance } from "@/lib/axios";
 
 export default function SecurityPage() {
-  const session = useSession();
+  const { data: session, status } = useSession();
   const queryClient = useQueryClient();
 
   const {
@@ -33,9 +33,9 @@ export default function SecurityPage() {
         oldPassword: data.currentPassword,
         password: data.newPassword,
       };
-
+      const token = session?.user?.userToken;
       await axiosInstance.post(`/user/update-password`, mapData, {
-        headers: { Authorization: `Bearer ${session.data?.user.userToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     },
     onSuccess: () => {
