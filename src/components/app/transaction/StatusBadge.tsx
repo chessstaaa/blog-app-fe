@@ -23,8 +23,6 @@ export function StatusBadge({ status }: { status: TransactionStatus }) {
     CANCELED: "Canceled",
   };
 
-  console.log(status);
-
   return (
     <span
       className={cn(

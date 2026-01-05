@@ -140,11 +140,15 @@ export function VoucherForm({ open, onOpenChange }: VoucherFormProps) {
                       <SelectValue placeholder="Select Event..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {events?.data.map((event) => (
-                        <SelectItem key={event.id} value={event.id.toString()}>
-                          {event.title}
-                        </SelectItem>
-                      ))}
+                      {events &&
+                        events.data.map((event) => (
+                          <SelectItem
+                            key={event.id}
+                            value={event.id.toString()}
+                          >
+                            {event.title}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 )}

@@ -101,9 +101,13 @@ export default function TransactionsPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {isPending && (
-                <div className="col-span-3 my-16 text-center">
-                  <p className="text-2xl font-bold">Loading...</p>
-                </div>
+                <tr>
+                  <td>
+                    <div className="col-span-3 my-16 text-center">
+                      <p className="text-2xl font-bold">Loading...</p>
+                    </div>
+                  </td>
+                </tr>
               )}
               {transactions ? (
                 transactions?.map((tx) => (

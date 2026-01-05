@@ -4,12 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Settings, LogOut } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { sidebarItems } from "@/static/sidebar";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios";
+import { UserTypes } from "@/types/user";
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const token = session?.user?.userToken;
+      const user = await axiosInstance.get<UserTypes>("/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return user.data;
+    },
+    enabled: status === "authenticated",
+  });
 
   return (
     <aside className="hidden h-screen w-72 flex-col border-r border-blue-100 bg-blue-950 text-white shadow-xl md:flex">
@@ -93,11 +109,13 @@ export const Sidebar = () => {
       <div className="mt-auto border-t border-blue-900/50 p-4">
         <div className="flex cursor-pointer items-center gap-3 rounded-xl border border-blue-800 bg-blue-900/40 p-3 transition-colors hover:bg-blue-900/60">
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-600 bg-blue-700 text-sm font-bold shadow-sm">
-            JD
+            {getInitials(user?.name || "")}
           </div>
           <div className="flex-1 overflow-hidden">
-            <p className="truncate text-sm font-medium text-white">John Doe</p>
-            <p className="truncate text-xs text-blue-300">Organizer</p>
+            <p className="truncate text-sm font-medium text-white">
+              {user?.name}
+            </p>
+            <p className="truncate text-xs text-blue-300">{user?.role}</p>
           </div>
           <button
             className="rounded-md p-1 text-blue-300 transition-colors hover:bg-red-400/10 hover:text-red-400"
