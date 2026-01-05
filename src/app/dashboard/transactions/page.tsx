@@ -127,7 +127,7 @@ export default function TransactionsPage() {
                       })}
                     </td>
                     <td className="px-4 py-3 font-semibold text-blue-700">
-                      {new Intl.NumberFormat("id-ID").format(tx.totalPrice)}
+                      {new Intl.NumberFormat("id-ID").format(tx.price)}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={tx.status} />

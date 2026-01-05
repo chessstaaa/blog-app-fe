@@ -20,7 +20,7 @@ export interface TransactionTypes {
   voucherId: number;
   voucher: Voucher;
   quantity: number;
-  totalPrice: number;
+  price: number;
   status: TransactionStatus;
   paymentProofUrl: string;
   expiresAt: string;

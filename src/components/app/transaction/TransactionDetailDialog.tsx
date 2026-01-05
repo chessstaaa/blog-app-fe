@@ -96,7 +96,7 @@ export function TransactionDetailDialog({
                   {new Intl.NumberFormat("id-ID", {
                     style: "currency",
                     currency: "IDR",
-                  }).format(transaction.totalPrice)}
+                  }).format(transaction.price)}
                 </p>
               </div>
             </div>
