@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react"; // Import useState
+import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -21,7 +21,6 @@ import { useSession } from "next-auth/react";
 export default function DashboardOverviewPage() {
   const { data: session, status } = useSession();
 
-  // 1. State untuk Filter
   const [timeFilter, setTimeFilter] = useState<"year" | "month" | "day">(
     "year",
   );
@@ -30,11 +29,9 @@ export default function DashboardOverviewPage() {
   );
 
   const { data: dashboard, isPending } = useQuery({
-    // 2. Query Key berubah jika filter berubah agar auto-refetch
     queryKey: ["dashboard", timeFilter, selectedDate],
     queryFn: async () => {
       const token = session?.user?.userToken;
-      // 3. Kirim params ke backend
       const blogs = await axiosInstance.get<DashboardTypes>("/dashboard", {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -54,7 +51,7 @@ export default function DashboardOverviewPage() {
           Dashboard Overview
         </h1>
 
-        {/* 4. Filter Controls UI */}
+        {/* Filter Controls UI */}
         <div className="flex items-center gap-3 rounded-lg border border-blue-100 bg-white p-2 shadow-sm">
           <Filter className="h-5 w-5 text-blue-600" />
 
@@ -89,7 +86,6 @@ export default function DashboardOverviewPage() {
             }
             onChange={(e) => {
               let val = e.target.value;
-              // Normalisasi format tanggal agar valid Date string
               if (timeFilter === "year") val = `${val}-01-01`;
               if (timeFilter === "month") val = `${val}-01`;
               setSelectedDate(val);
