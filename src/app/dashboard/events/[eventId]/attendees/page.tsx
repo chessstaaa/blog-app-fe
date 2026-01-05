@@ -116,7 +116,7 @@ export default function AttendeePage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {formatIDR(item.totalPrice)}
+                      {formatIDR(item.price)}
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       {formatDate(item.createdAt)}

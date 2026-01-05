@@ -5,7 +5,7 @@ import { Voucher } from "./voucher";
 export type TransactionStatus =
   | "WAITING_FOR_PAYMENT"
   | "WAITING_FOR_ADMIN_CONFIRMATION"
-  | "DONE"
+  | "PAID"
   | "REJECTED"
   | "EXPIRED"
   | "CANCELED";
