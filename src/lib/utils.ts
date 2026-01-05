@@ -38,3 +38,11 @@ export const formatDate = (dateString: string) => {
 export const formatNumber = (value: number) => {
   return value.toLocaleString("id-ID");
 };
+
+export const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+};

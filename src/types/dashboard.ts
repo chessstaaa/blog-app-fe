@@ -3,7 +3,7 @@ export interface DashboardTypes {
   ticketsSold: number;
   activeEvents: number;
   avgRating: number;
-  monthlySales: ChartData[];
+  salesChart: ChartData[];
 }
 
 export interface ChartData {
