@@ -21,13 +21,6 @@ export default function OrderDetailCard() {
                         </div>
                     )}
                 </div>
-                <div className="flex-1">
-                    <h2 className="font-bold text-base sm:text-lg line-clamp-2">{tx.event?.title}</h2>
-                    <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{tx.event?.location}</p>
-                    <p className="text-xs sm:text-sm text-gray-500">
-                        {tx.event?.startAt && new Date(tx.event.startAt).toLocaleDateString()} • {tx.event?.startAt && new Date(tx.event.startAt).toLocaleTimeString()}
-                    </p>
-                </div>
             </div>
 
             <div className="border-t pt-3 flex justify-between items-end gap-3">

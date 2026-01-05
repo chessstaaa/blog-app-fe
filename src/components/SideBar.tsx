@@ -38,7 +38,7 @@ export const Sidebar = () => {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white shadow-sm shadow-blue-900/50">
             EP
           </div>
-          <span className="text-blue-50">EventPro</span>
+          <span className="text-blue-50">LOKETCO</span>
         </Link>
       </div>
 

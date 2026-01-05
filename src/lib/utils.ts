@@ -46,3 +46,7 @@ export const getInitials = (name: string) => {
     .join("")
     .toUpperCase();
 };
+
+export const formatCurrency = (amount: number) => {
+  return formatIDR(amount);
+};

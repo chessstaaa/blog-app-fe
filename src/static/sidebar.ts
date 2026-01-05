@@ -18,6 +18,11 @@ export const sidebarItems = [
     icon: CalendarDays,
   },
   {
+    title: "Tickets",
+    href: "/dashboard/tickets",
+    icon: Ticket,
+  },
+  {
     title: "Transactions",
     href: "/dashboard/transactions",
     icon: Ticket,
