@@ -1,10 +1,10 @@
-import { User } from "@/types/user";
+import { UserTypes } from "@/types/user";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 type Store = {
-  user: User | null;
-  onAuthSuccess: ({ user }: { user: User }) => void;
+  user: UserTypes | null;
+  onAuthSuccess: ({ user }: { user: UserTypes }) => void;
   clearAuth: () => void;
 };
 

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { TransactionStatus } from "@/types/transaction";
 
 export function StatusBadge({ status }: { status: TransactionStatus }) {
-  const styles = {
+  const styles: Record<TransactionStatus, string> = {
     WAITING_FOR_PAYMENT: "bg-gray-100 text-gray-700 border-gray-200",
     WAITING_FOR_ADMIN_CONFIRMATION:
       "bg-yellow-50 text-yellow-700 border-yellow-200 animate-pulse",
@@ -14,7 +14,7 @@ export function StatusBadge({ status }: { status: TransactionStatus }) {
     CANCELED: "bg-red-50 text-red-700 border-red-200 line-through",
   };
 
-  const labels = {
+  const labels: Record<TransactionStatus, string> = {
     WAITING_FOR_PAYMENT: "Waiting Payment",
     WAITING_FOR_ADMIN_CONFIRMATION: "Need Approval",
     PAID: "Completed",
