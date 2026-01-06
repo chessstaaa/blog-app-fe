@@ -1,28 +1,33 @@
-import { auth } from "@/auth"
-import { api } from "@/lib/api"
+"use client"
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import { axiosInstance } from "@/lib/axios"
 
-async function fetchUserProfile(userToken: string) {
-  try {
-    const res = await api.get("/auth/me", {
-      headers: {
-        Authorization: `Bearer ${userToken}`,
-      },
-    })
-    return res.data
-  } catch (error) {
-    console.error("Failed to fetch user profile:", error)
-    return null
-  }
-}
+export default function UserInfoCard() {
+  const { data: session, status } = useSession()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-export default async function UserInfoCard() {
-  const session = await auth()
-  const userToken = session?.user?.userToken
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.userToken) {
+      axiosInstance
+        .get("/auth/me", {
+          headers: {
+            Authorization: `Bearer ${session.user.userToken}`,
+          },
+        })
+        .then((res) => setUser(res.data))
+        .catch((err) => {
+          console.error("Failed to fetch user profile:", err)
+          setUser(null)
+        })
+        .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [session, status])
 
-  if (!userToken) return null
-
-  const user = await fetchUserProfile(userToken)
-
+  if (loading) return <div className="bg-white rounded-lg p-4 animate-pulse h-40" />
   if (!user) return null
 
   return (
