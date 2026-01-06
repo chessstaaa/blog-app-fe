@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react"
 import { Event } from "@/types/event"
 import { useQuery } from "@tanstack/react-query"
-import axios from "axios"
-import { API_URL } from "@/lib/constants"
+import { axiosInstance } from "@/lib/axios"
 import { useTransactionStore } from "@/stores/transaction"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -43,12 +42,12 @@ export default function EventTabs({ event }: { event: Event }) {
 
   const { data: related = [] } = useQuery<Ticket[]>({
     queryKey: ["tickets", event.id],
-    queryFn: async () => (await axios.get(`${API_URL}/tickets?eventId=${event.id}`)).data
+    queryFn: async () => (await axiosInstance.get(`/tickets?eventId=${event.id}`)).data
   })
 
   const { data: vouchers = [] } = useQuery<Voucher[]>({
     queryKey: ["vouchers", event.id],
-    queryFn: async () => (await axios.get(`${API_URL}/voucher?eventId=${event.id}`)).data
+    queryFn: async () => (await axiosInstance.get(`/voucher?eventId=${event.id}`)).data
   })
 
   const MAX_PER_TICKET = 5
