@@ -1,13 +1,27 @@
-"use client"
-import { useEffect, useState } from "react"
-import { getProfile } from "@/lib/auth"
+import { auth } from "@/auth"
+import { api } from "@/lib/api"
 
-export default function UserInfoCard() {
-  const [user, setUser] = useState<any>(null)
+async function fetchUserProfile(userToken: string) {
+  try {
+    const res = await api.get("/auth/me", {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    })
+    return res.data
+  } catch (error) {
+    console.error("Failed to fetch user profile:", error)
+    return null
+  }
+}
 
-  useEffect(() => {
-    getProfile().then(setUser)
-  }, [])
+export default async function UserInfoCard() {
+  const session = await auth()
+  const userToken = session?.user?.userToken
+
+  if (!userToken) return null
+
+  const user = await fetchUserProfile(userToken)
 
   if (!user) return null
 
